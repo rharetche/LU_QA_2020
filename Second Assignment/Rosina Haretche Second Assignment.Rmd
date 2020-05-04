@@ -1,0 +1,355 @@
+---
+title: <center> <h1>Homework 2. Corona and Democracy</h1> <center>
+output: html_document
+---
+<p>&nbsp;</p>
+<center> <h4>Leiden University</h4> </center> 
+<center> <h4>Political Science Research Methods</h4> </center> 
+<p>&nbsp;</p>
+<center> </h4>Rosina Haretche</h4> </center> 
+<center> </h4>Student Number: 2686732</h4> </center>
+<center> </h4>[github.com/rharetche](https://github.com/rharetche)</h4> </center>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+```{r, warning=FALSE, message=FALSE}
+Data=read.csv("https://raw.githubusercontent.com/rharetche/LU_QA_2020/master/Datasets/Assignment%202/Corona_mergedV-Dem.csv")
+library(ggplot2)
+library("GGally")
+```
+
+<p>&nbsp;</p>
+
+**1A**
+
+Distribution of cases
+
+```{r, warning=FALSE, message=FALSE}
+ggplot(Data,
+       aes(x = Data$cases_log))+
+  geom_histogram(col='black', fill='Gold')+
+  labs(x = "Corona Cases",
+       y = "Count",
+       caption="Data source: https://www.ecdc.europa.eu/en")
+
+```
+
+<p>&nbsp;</p>
+
+Distribution of Polyarchic Democracies
+```{r, warning=FALSE, message=FALSE}
+ggplot(Data,
+       aes(x = Data$v2x_polyarchy))+
+  geom_histogram(col='black', fill='Gold')+
+  labs(x = "Polyarchy",
+       y = "Count",
+       caption="Data source: V-Dem project")
+
+```
+
+<p>&nbsp;</p>
+
+Distribution of Liberal Democracies
+
+```{r, warning=FALSE, message=FALSE}
+ggplot(Data,
+       aes(x = Data$v2x_libdem))+
+  geom_histogram(col='black', fill='Gold')+
+  labs(x = "Liberal Democracy",
+       y = "Count",
+       caption="Data source: V-Dem project")
+
+```
+
+<p>&nbsp;</p>
+
+Distribution of Participatory Democracies
+
+```{r, warning=FALSE, message=FALSE}
+ggplot(Data,
+       aes(x = Data$v2x_partipdem))+
+  geom_histogram(col='black', fill='Gold')+
+  labs(x = "Electoral Democracy",
+       y = "Count",
+       caption="Data source: V-Dem project")
+
+```
+
+<p>&nbsp;</p>
+
+**1B**
+
+In order to reproduce the plot, we first need to define the variable "polyarchy_cat".
+
+```{r, warning=FALSE, message=FALSE}
+# If v2x_polyarchy>.5: democracy(1); v2x_polyarchy<.5: nodemocracy(0)
+Data$polyarchy_cat=ifelse(Data$v2x_polyarchy> .5, "Democracy", "Autocracy")
+Data$polyarchy_cat<-factor(Data$polyarchy_cat)
+```
+
+
+```{r, warning=FALSE, message=FALSE}
+ggpairs(Data, columns = c("popdata2018_log", "deaths_log", "v2x_partipdem", "polyarchy_cat"),
+        aes(color = "Species"))
+```
+
+<p>&nbsp;</p>
+
+
+**1C**
+
+First, I will generate all the variables I will need to plot the required distributions.
+
+
+```{r, warning=FALSE, message=FALSE}
+# If v2x_polyarchy>.5: democracy(1); v2x_polyarchy<.5: nodemocracy(0)
+Data$polyarchy_cat=ifelse(Data$v2x_polyarchy> .5, "Democracy", "Autocracy")
+Data$polyarchy_cat<-factor(Data$polyarchy_cat)
+
+
+# If v2x_libdem>.5: democracy(1); v2x_libdem<.5: nodemocracy(0)
+Data$v2x_libdem_cat=ifelse(Data$v2x_libdem> .5, "Democracy", "Autocracy")
+Data$v2x_libdem_cat<-factor(Data$v2x_libdem_cat)
+
+
+# If v2x_partipdem>.5: democracy(1); v2x_partipdem<.5: nodemocracy(0)
+Data$v2x_partipdem_cat=ifelse(Data$v2x_partipdem> .5, "Democracy", "Autocracy")
+Data$v2x_partipdem_cat<-factor(Data$v2x_partipdem_cat)
+```
+
+<p>&nbsp;</p>
+
+Now we should be able to see the distribution of all three variables:
+
+```{r, warning=FALSE, message=FALSE}
+boxplot(Data$cases_log~Data$polyarchy_cat,
+        col='green',
+        xlab='Type of Democracy', ylab='Number of Cases (log)',
+        caption="Data source: V-Dem project")
+```
+<p>&nbsp;</p>
+
+
+```{r, warning=FALSE, message=FALSE}
+boxplot(Data$cases_log~Data$v2x_libdem_cat,
+        col='green',
+        xlab='Type of Liberal Democracy', ylab='Corona Cases(log)',
+        caption="Data source: V-Dem project")
+```
+<p>&nbsp;</p>
+
+
+
+```{r, warning=FALSE, message=FALSE}
+boxplot(Data$cases_log~Data$v2x_partipdem_cat,
+        col='green',
+        xlab='Type of Participatory Democracy', ylab='Corona Cases(log)',
+        caption="Data source: V-Dem project")
+```
+
+
+<p>&nbsp;</p>
+**1D**
+
+
+In order to be able to estimate, we would need to generate linear models corresponding to the equations. For the purpose of our analyses, we will assume the error is zero.
+<p>&nbsp;</p>
+
+**1**
+I will start with the first equation:
+cases_log = $\beta_{0}$ + $\beta_{1}$v2x_polyarchy + $\epsilon$
+
+```{r, warning=FALSE, message=FALSE}
+OLS_m1=lm(cases_log~v2x_polyarchy, data=Data)
+summary(OLS_m1)
+```
+
+I believe we can otherwise calculate the coefficients using the following function:
+
+```{r, warning=FALSE, message=FALSE}
+OLS_m1$coefficients
+```
+
+
+I will try to plot these results.
+
+```{r, warning=FALSE, message=FALSE}
+ggplot(Data, aes(x=v2x_polyarchy, y=cases_log)) + geom_point() + geom_smooth(method=lm, color="gold", se=FALSE)
+```
+
+
+<p>&nbsp;</p>
+
+**2**
+*cases_log* = $\beta_{0}$ + $\beta_{1}$*v2x_libdem* + $\epsilon$
+```{r, warning=FALSE, message=FALSE}
+OLS_m2=lm(cases_log~v2x_libdem, data=Data)
+OLS_m2$coefficients
+summary(OLS_m2)
+```
+
+
+```{r, warning=FALSE, message=FALSE}
+ggplot(Data, aes(x=v2x_libdem, y=cases_log)) + geom_point() + geom_smooth(method=lm, color="gold", se=FALSE)
+```
+
+
+<p>&nbsp;</p>
+
+**3**
+*cases_log* = $\beta_{0}$ + $\beta_{1}$*v2x_partipdem* + $\epsilon$
+```{r, warning=FALSE, message=FALSE}
+OLS_m3=lm(cases_log~v2x_partipdem, data=Data)
+OLS_m3$coefficients
+summary(OLS_m3)
+```
+
+
+```{r, warning=FALSE, message=FALSE}
+ggplot(Data, aes(x=v2x_partipdem, y=cases_log)) + geom_point() + geom_smooth(method=lm, color="gold", se=FALSE)
+```
+
+
+
+<p>&nbsp;</p>
+
+**4**
+4. *cases_log* = $\beta_{0}$ + $\beta_{1}$*v2x_polyarchy* + $\beta_{2}$*v2x_libdem* + $\beta_{3}$*v2x_partipdem* + $\epsilon$
+```{r, warning=FALSE, message=FALSE}
+OLS_m4=lm(cases_log~v2x_polyarchy+v2x_libdem+v2x_partipdem, data=Data)
+OLS_m4$coefficients
+summary(OLS_m4)
+```
+
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+<h4>**Interpretation so far**</h4>
+If we take a look at the above four plots, the differences between the different types of democracy do not seem to be significant.
+
+On the intuitive level, the error – i.e. the distance between the regression line and each individual observation – seems to be quite big. With this in mind, I would believe the correlation, even though it is present, is not of much significance.
+
+However, if I am not mistaken, the high t value, combined with a low p value, could show that there is actually a statistically significant correlation between the two variables. This would mean that democracies are indeed worse at handling the Corona crisis.
+
+When we look at the coefficients, we can see that the slope is of significance, meaning that when we increment the democratic index by 1, the log of Corona cases also increments by around 2. I find it hard to analyze the index in terms of the increment in one unit, since the entire index goes from 0 to 1.
+
+I am not sure how to interpret the fact that on case #4 the coefficient for polyarchy is such a big negative number, or why each of the coefficients vary so much when taking all the variables together from what they look like taken individually.
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+
+**5**
+
+We can relate the corona cases to the population size by normalizing said variable:
+
+```{r, warning=FALSE, message=FALSE}
+Data$norm_case=Data$cases_log/Data$popdata2018_log
+```
+
+We then follow the same pattern of thought explored above:
+
+```{r, warning=FALSE, message=FALSE}
+OLS_m6=lm(norm_case~v2x_polyarchy, data=Data)
+OLS_m6$coefficients
+summary(OLS_m6)
+```
+
+<p>&nbsp;</p>
+
+```{r, warning=FALSE, message=FALSE}
+ggplot(Data, aes(x=v2x_polyarchy, y=norm_case)) + geom_point() + geom_smooth(method=lm, color="Gold", se=FALSE)
+
+```
+
+<p>&nbsp;</p>
+
+We can otherwise use the indicated function:
+*cases_log* = $\beta_{0}$ + $\beta_{1}$*v2x_polyarchy* + $\beta_{2}$*popdata 2018* + $\epsilon$
+
+And repeat the pattern:
+
+```{r, warning=FALSE, message=FALSE}
+OLS_m7=lm(cases_log~v2x_polyarchy+popdata2018, data=Data)
+OLS_m7$coefficients
+summary(OLS_m7)
+```
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+<h4>**Reanalizing using the cases normalized to the population**</h4>
+<p>&nbsp;</p>
+**1**
+*norm_case* = $\beta_{0}$ + $\beta_{1}$v2x_polyarchy + $\epsilon$
+
+```{r, warning=FALSE, message=FALSE}
+OLS_norm1=lm(norm_case~v2x_polyarchy, data=Data)
+summary(OLS_norm1)
+ggplot(Data, aes(x=v2x_polyarchy, y=norm_case)) + geom_point() + geom_smooth(method=lm, color="royalblue2", se=FALSE)
+```
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+**2**
+*norm_case* = $\beta_{0}$ + $\beta_{1}$*v2x_libdem* + $\epsilon$
+
+```{r, warning=FALSE, message=FALSE}
+OLS_norm2=lm(norm_case~v2x_libdem, data=Data)
+OLS_norm2$coefficients
+summary(OLS_norm2)
+ggplot(Data, aes(x=v2x_libdem, y=norm_case)) + geom_point() + geom_smooth(method=lm, color="royalblue2", se=FALSE)
+  
+```
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+**3**
+*norm_case* = $\beta_{0}$ + $\beta_{1}$*v2x_partipdem* + $\epsilon$
+```{r, warning=FALSE, message=FALSE}
+OLS_norm3=lm(norm_case~v2x_partipdem, data=Data)
+OLS_norm3$coefficients
+summary(OLS_norm3)
+ggplot(Data, aes(x=v2x_partipdem, y=norm_case)) + geom_point() + geom_smooth(method=lm, color="royalblue2", se=FALSE)
+```
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+**4**
+*norm_case* = $\beta_{0}$ + $\beta_{1}$*v2x_polyarchy* + $\beta_{2}$*v2x_libdem* + $\beta_{3}$*v2x_partipdem* + $\epsilon$
+
+```{r, warning=FALSE, message=FALSE}
+OLS_norm4=lm(norm_case~v2x_polyarchy+v2x_libdem+v2x_partipdem, data=Data)
+OLS_norm4$coefficients
+summary(OLS_norm4)
+
+```
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+<h4>**Interpretation**</h4>
+
+When we normalize the cases over the population, we still have a positive association between the number of cases in relation to the total population of each country and the extent to which said country is democratic. As we increase in the democracy index, we also increase in the number of Corona cases. 
+
+We also appear to get a smaller difference between the linear model and the observations, and a more pronounced slope. However, the distribution still looks somewhat scattered. Observations with completely opposite democratic ranking are on the same level in regards to the Corona cases.
+
+The differences among the democratic indexes do not seem very significant either, as the coefficients for each of them are relatively similar.
+
+I do not think the normalized cases greatly change the previous conclusion. This might be related to the fact that there are both democracies and autocracies with big populations, and so the size of its populations do not affect the general relation between the number of cases and the level of democracy. In each category there would be big countries balancing each other.
+
+I believe it might also be worth mentioning, or at least giving it some consideration when analyzing the distributions, that the data collection for the Coronavirus cases varies greatly from country to country. While some have incurred in massive testing, others have limited resources and/or chose to only test symptomatic patients. 
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+
